@@ -1,0 +1,5 @@
+Horizontal Bar
+http://noobtuts.com/content/unity/2d-snake-game/border_horizontal.png
+
+Vertical Bar
+http://noobtuts.com/content/unity/2d-snake-game/border_vertical.png
