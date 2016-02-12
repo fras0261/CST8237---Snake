@@ -18,70 +18,72 @@ public class Snake : MonoBehaviour {
     public Transform leftBorder;
     public Transform rightBorder;
 
-    private float speed = 0.1f;
+    private float _speed = 0.1f;
     Vector2 directionVector = Vector2.up;
     Vector2 movementVector;
 
     List<GameObject> tail = new List<GameObject>();
 
-    private bool eat = false;
-    private bool isHorizontal = false;
-    private bool isVertical = true;
+    private bool _hasEaten = false;
+    private bool _isHorizontal = false;
+    private bool _isVertical = true;
 
-    private int lives = 3;
-    private int totalPoints = 0;
+    private int _lives = 3;
+    private int _totalPoints = 0;
 
 	// Use this for initialization
 	void Start () {
         SpawnFood();
-        livesText.text = "Lives: " + lives;
-        scoreText.text = "Score: " + totalPoints;
-        InvokeRepeating("MoveSnake", 0.3f, speed);
+        livesText.text = "Lives: " + _lives;
+        scoreText.text = "Score: " + _totalPoints;
+        InvokeRepeating("MoveSnake", 0.3f, _speed);
 	}
 	
 	// Update is called once per frame
+	//Controls the direction that the user moves depending on the arrow key pressed by the user
 	void Update () {
-        if (Input.GetKey(KeyCode.RightArrow) && isHorizontal == false)
+        if (Input.GetKey(KeyCode.RightArrow) && _isHorizontal == false)
         {
             directionVector = Vector2.right;
-            isVertical = false;
-            isHorizontal = true;
+            _isVertical = false;
+            _isHorizontal = true;
 
         }            
-        else if (Input.GetKey(KeyCode.DownArrow) && isVertical == false)
+        else if (Input.GetKey(KeyCode.DownArrow) && _isVertical == false)
         {
             directionVector = Vector2.down;
-            isVertical = true;
-            isHorizontal = false;
+            _isVertical = true;
+            _isHorizontal = false;
 
         }            
-        else if (Input.GetKey(KeyCode.LeftArrow) && isHorizontal == false)
+        else if (Input.GetKey(KeyCode.LeftArrow) && _isHorizontal == false)
         {
             directionVector = Vector2.left;
-            isVertical = false;
-            isHorizontal = true;
+            _isVertical = false;
+            _isHorizontal = true;
         }            
-        else if (Input.GetKey(KeyCode.UpArrow) && isVertical == false)
+        else if (Input.GetKey(KeyCode.UpArrow) && _isVertical == false)
         {
             directionVector = Vector2.up;
-            isVertical = true;
-            isHorizontal = false;
+            _isVertical = true;
+            _isHorizontal = false;
         }
             
         movementVector = directionVector;
 	}
-
+		
     void MoveSnake()
     {
         Vector2 currentPosition = transform.position;
-        Debug.Log(tail.Count);
 
-        if (eat)
+		//If the snake has a piece of food then the system will instatiate a new tail prefab and add it the tail
+        if (_hasEaten)
         {
             GameObject ts = (GameObject)Instantiate(tailSegment, currentPosition, Quaternion.identity);
             tail.Insert(0, ts);
-            eat = false;
+            _hasEaten = false;
         }
+		//If the snake has a tail then the system simulates motion by moving the tail segment at the end to the position just behind the head
         else if(tail.Count > 0)
         {
             tail.Last().transform.position = currentPosition;
@@ -92,6 +94,7 @@ public class Snake : MonoBehaviour {
         transform.Translate(movementVector);
     }
 
+	//The system will spawn a piece of food in a random location within the game's border.
     void SpawnFood()
     {
         int xFood = (int)Random.Range((leftBorder.position.x + 1.0f), (rightBorder.position.x - 1.0f));
@@ -100,23 +103,27 @@ public class Snake : MonoBehaviour {
         Instantiate(foodPellet, new Vector2(xFood, yFood), Quaternion.identity);
     }
 
+
     void OnTriggerEnter2D(Collider2D obj)
     {
+		//If the snake's head collides into a food prefab then the system will destroy the food and spawn it some where new. The score will increase.
         if (obj.name.Contains("FoodPrefab"))
         {
-            eat = true;
+            _hasEaten = true;
             Destroy(obj.gameObject);
-            totalPoints += (5 * (tail.Count + 1));
-            scoreText.text = "Score: " + totalPoints;
+            _totalPoints += (5 * (tail.Count + 1));
+            scoreText.text = "Score: " + _totalPoints;
             SpawnFood();
         }
+		//If the snake's head collides into anything else then a life will be subtracted
         else
         {
-            lives--;
+            _lives--;
 
-            if (lives > 0)
+			//If the user still has any lives left then the snake will respawn at the starting position and its tail will be destroyed
+            if (_lives > 0)
             {
-                livesText.text = "Lives: " + lives;
+                livesText.text = "Lives: " + _lives;
 
                 foreach (GameObject tailBlock in tail)
                     GameObject.Destroy(tailBlock);
@@ -125,6 +132,7 @@ public class Snake : MonoBehaviour {
                 this.transform.position = new Vector3(-5, -5, 0);
 
             }
+			//If the player losses all of their lifes then the system will reload the game.
             else
             {
                 Application.LoadLevel("SnakeMain");
